@@ -240,6 +240,13 @@ def get_cors_origins() -> List[str]:
 
 def get_trusted_hosts() -> List[str]:
     """Extract hostnames from CORS origins for TrustedHostMiddleware"""
+    # Check if TRUSTED_HOSTS is set in environment
+    trusted_hosts_env = os.getenv("TRUSTED_HOSTS")
+    if trusted_hosts_env:
+        hosts = [host.strip() for host in trusted_hosts_env.split(",") if host.strip()]
+        return hosts
+    
+    # Fallback to extracting from CORS origins
     origins = get_cors_origins()
     hosts = []
 
@@ -254,12 +261,13 @@ def get_trusted_hosts() -> List[str]:
         if host and host not in hosts:
             hosts.append(host)
 
-    # Add localhost for development
-    if "localhost" not in hosts:
-        hosts.extend(["localhost", "127.0.0.1"])
+    # Add defaults for development and production
+    default_hosts = ["localhost", "127.0.0.1", "cricket-chatbot-fyty.onrender.com"]
+    for host in default_hosts:
+        if host not in hosts:
+            hosts.append(host)
 
     return hosts
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
