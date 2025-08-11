@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: cricket-ai-assistant
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn chatbot_cricket_complete:app --host 0.0.0.0 --port $PORT --workers 2
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: SERVICE_API_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: ENV
+        value: production
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: LLM_TEMPERATURE
+        value: "0.3"
+      - key: RATE_LIMIT_DEFAULT
+        value: "30/minute"
+      - key: MAX_CONTENT_LENGTH
+        value: "524288"
+      - key: MAX_QUESTION_LENGTH
+        value: "2000"
+      - key: LLM_TIMEOUT_SECONDS
+        value: "30"
+      - key: MAX_RETRY_ATTEMPTS
+        value: "3"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: FRONTEND_ORIGINS
+        value: "https://yourdomain.com"  # Update with your actual domain
+        
+  # Optional: Redis service for production rate limiting
+  - type: redis
+    name: cricket-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
